@@ -7,15 +7,12 @@ let estado = "INICIO"; // inicio, instrucciones, etc.
 let jugador;
 let vehiculos = [];
 
-<<<<<<< HEAD
+
 let imgObelisco, imgVereda, imgAsfalto, imgMetrobus, imgJugador;
 let imgAuto1Derecha, imgAuto2Derecha, imgAuto1, imgAuto2;
 let imgTaxi1Derecha, imgTaxi2Derecha, imgTaxi1, imgTaxi2;
-let imgColectivo;
-=======
-// TILES: Declaración de variables globales para imágenes y fuentes
-let imgObelisco, imgVereda, imgAsfalto, imgMetrobus, imgJugador, imgAuto, imgColectivo, imgTaxi;
->>>>>>> ca5f74f6a84ad360fc06506755597b3fdd3a798a
+
+
 let fuentePixel, fuenteTitulo;
 let imgWinScreen, imgRewindButton;
 
