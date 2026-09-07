@@ -7,11 +7,21 @@ let estado = "INICIO"; // inicio, instrucciones, etc.
 let jugador;
 let vehiculos = [];
 
+<<<<<<< HEAD
 let imgObelisco, imgVereda, imgAsfalto, imgMetrobus, imgJugador;
 let imgAuto1Derecha, imgAuto2Derecha, imgAuto1, imgAuto2;
 let imgTaxi1Derecha, imgTaxi2Derecha, imgTaxi1, imgTaxi2;
 let imgColectivo;
+=======
+// TILES: Declaración de variables globales para imágenes y fuentes
+let imgObelisco, imgVereda, imgAsfalto, imgMetrobus, imgJugador, imgAuto, imgColectivo, imgTaxi;
+>>>>>>> ca5f74f6a84ad360fc06506755597b3fdd3a798a
 let fuentePixel, fuenteTitulo;
+let imgWinScreen, imgRewindButton;
+
+
+// UI: Declaración de variables para la interfaz
+let imgFondoInicio, imgTitulo, imgBotonPlay, imgInstrucciones;
 
 function preload() {
   imgJugador = loadImage('img/personaje.png');
@@ -38,6 +48,18 @@ function preload() {
   // imgAsfalto  = loadImage('assets/asfalto.png');
   // imgMetrobus = loadImage('assets/metrobus.png');
   // imgColectivo= loadImage('assets/colectivo.png');
+<<<<<<< HEAD
+=======
+  // imgTaxi     = loadImage('assets/taxi.png');
+
+  // Carga de UI Inicio
+  imgFondoInicio = loadImage('img/ui/fondo-inicio.png');
+  imgTitulo      = loadImage('img/ui/titulo.png');
+  imgBotonPlay   = loadImage('img/ui/boton-play.png');
+  imgInstrucciones = loadImage('img/ui/instrucciones-pantalla.png');
+  imgWinScreen     = loadImage('img/ui/win-screen.png');
+  imgRewindButton  = loadImage('img/ui/rewind-button.png');
+>>>>>>> ca5f74f6a84ad360fc06506755597b3fdd3a798a
 }
 
 function setup() {
@@ -54,10 +76,10 @@ function draw() {
 
   switch (estado) {
     case "INICIO":
-      dibujarPantallaTexto("HORA PICO", "Presioná ENTER para ver instrucciones");
+      dibujarPantallaInicio();
       break;
     case "INSTRUCCIONES":
-      dibujarPantallaTexto("INSTRUCCIONES", "Usa WASD o Flechas para moverte.\nLlega al otro lado cruzando el tráfico.\n\nPresioná ENTER para jugar");
+      dibujarPantallaInstrucciones();
       break;
     case "GAMEPLAY":
       ejecutarGameplay();
@@ -66,7 +88,7 @@ function draw() {
       dibujarPantallaTexto("¡TE ATROPELLARON!", "Te quedaste sin vidas.\n\nPresioná 'R' para reiniciar", color(150, 30, 30));
       break;
     case "VICTORIA":
-      dibujarPantallaTexto("¡ENTREGASTE TU PEDIDO!", "¡Cruzaste la 9 de Julio con éxito!\n\nPresioná 'R' para jugar de nuevo", color(30, 120, 60));
+      dibujarPantallaVictoria();
       break;
   }
 }
@@ -136,11 +158,9 @@ function dibujarEscenario() {
   }
 }
 
-// CONTROLES Y MANEJO DE TECLADO 
+// CONTROLES Y MANEJO DE TECLADO Y MOUSE
 function keyPressed() {
-  if (estado === "INICIO" && keyCode === ENTER) {
-    estado = "INSTRUCCIONES";
-  } else if (estado === "INSTRUCCIONES" && keyCode === ENTER) {
+  if (estado === "INSTRUCCIONES" && keyCode === ENTER) {
     estado = "GAMEPLAY";
   } else if (estado === "GAMEPLAY") {
     if (keyCode === UP_ARROW || key === 'w' || key === 'W') jugador.mover(0, -1);
@@ -154,6 +174,20 @@ function keyPressed() {
 
   if ([37, 38, 39, 40, 32].includes(keyCode)) {
     return false;
+  }
+}
+
+function mouseClicked() {
+  if (estado === "INICIO") {
+    let btnX = 483;
+    let btnY = 539;
+    let btnAncho = imgBotonPlay.width;
+    let btnAlto = imgBotonPlay.height;
+
+    if (mouseX >= btnX && mouseX <= btnX + btnAncho &&
+        mouseY >= btnY && mouseY <= btnY + btnAlto) {
+      estado = "INSTRUCCIONES";
+    }
   }
 }
 
@@ -180,6 +214,30 @@ function dibujarHUD() {
   textAlign(LEFT, TOP);
   text("Vidas: " + jugador.vidas, 20, 20);
 }
+
+function dibujarPantallaInicio() {
+  image(imgFondoInicio, 0, 0, width, height);
+  image(imgTitulo, 350, 357);
+  image(imgBotonPlay, 483, 539);
+}
+function dibujarPantallaInstrucciones() {
+  image(imgInstrucciones, 0, 0, width, height);
+}
+
+function dibujarPantallaVictoria() {
+  background(15); // Fondo oscuro para los bordes sobrantes del canvas
+
+  // Centrado respetando resolución original
+  let x = (width - imgWinScreen.width) / 2;
+  let y = (height - imgWinScreen.height) / 2;
+  image(imgWinScreen, x, y);
+
+  // Modificá estos valores para ubicar el botón
+  let botonX = 580;
+  let botonY = 640;
+
+  image(imgRewindButton, botonX, botonY);
+} 
 
 function dibujarPantallaTexto(titulo, subtitulo, colorTarjeta = color(20)) {
   background(15);
