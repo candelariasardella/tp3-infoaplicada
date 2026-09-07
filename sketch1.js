@@ -7,11 +7,21 @@ let estado = "INICIO"; // inicio, instrucciones, etc.
 let jugador;
 let vehiculos = [];
 
+<<<<<<< HEAD
 let imgObelisco, imgVereda, imgAsfalto, imgMetrobus, imgJugador;
 let imgAuto1Derecha, imgAuto2Derecha, imgAuto1, imgAuto2;
 let imgTaxi1Derecha, imgTaxi2Derecha, imgTaxi1, imgTaxi2;
 let imgColectivo;
+=======
+// TILES: Declaración de variables globales para imágenes y fuentes
+let imgObelisco, imgVereda, imgAsfalto, imgMetrobus, imgJugador, imgAuto, imgColectivo, imgTaxi;
+>>>>>>> ca5f74f6a84ad360fc06506755597b3fdd3a798a
 let fuentePixel, fuenteTitulo;
+let imgWinScreen, imgRewindButton;
+
+
+// UI: Declaración de variables para la interfaz
+let imgFondoInicio, imgTitulo, imgBotonPlay, imgInstrucciones;
 
 function preload() {
   imgJugador = loadImage('img/personaje.png');
@@ -24,13 +34,13 @@ function preload() {
   imgAuto1 = loadImage('img/auto2.png');
   imgAuto2 = loadImage('img/auto1.png');
 
-  // Taxi - Derecha
+  // Taxis - Derecha
   imgTaxi1Derecha = loadImage('img/taxi1_derecha.png');
   imgTaxi2Derecha = loadImage('img/taxi2_derecha.png');
 
-  // Taxi - Izquierda
-  imgTaxi1 = loadImage('img/taxi2.png');
-  imgTaxi2 = loadImage('img/taxi1.png');
+  // Taxis - Izquierda
+  imgTaxi1 = loadImage('img/taxi1.png');
+  imgTaxi2 = loadImage('img/taxi2.png');
 
   // Carga de imágenes suplementarias (descomentar según uso)
   // imgObelisco = loadImage('assets/obelisco.png');
@@ -38,6 +48,15 @@ function preload() {
   // imgAsfalto  = loadImage('assets/asfalto.png');
   // imgMetrobus = loadImage('assets/metrobus.png');
   // imgColectivo= loadImage('assets/colectivo.png');
+  // imgTaxi     = loadImage('assets/taxi.png');
+
+  // Carga de UI Inicio
+  imgFondoInicio = loadImage('img/ui/fondo-inicio.png');
+  imgTitulo      = loadImage('img/ui/titulo.png');
+  imgBotonPlay   = loadImage('img/ui/boton-play.png');
+  imgInstrucciones = loadImage('img/ui/instrucciones-pantalla.png');
+  imgWinScreen     = loadImage('img/ui/win-screen.png');
+  imgRewindButton  = loadImage('img/ui/rewind-button.png');
 }
 
 function setup() {
@@ -54,10 +73,10 @@ function draw() {
 
   switch (estado) {
     case "INICIO":
-      dibujarPantallaTexto("HORA PICO", "Presioná ENTER para ver instrucciones");
+      dibujarPantallaInicio();
       break;
     case "INSTRUCCIONES":
-      dibujarPantallaTexto("INSTRUCCIONES", "Usa WASD o Flechas para moverte.\nLlega al otro lado cruzando el tráfico.\n\nPresioná ENTER para jugar");
+      dibujarPantallaInstrucciones();
       break;
     case "GAMEPLAY":
       ejecutarGameplay();
@@ -66,7 +85,7 @@ function draw() {
       dibujarPantallaTexto("¡TE ATROPELLARON!", "Te quedaste sin vidas.\n\nPresioná 'R' para reiniciar", color(150, 30, 30));
       break;
     case "VICTORIA":
-      dibujarPantallaTexto("¡ENTREGASTE TU PEDIDO!", "¡Cruzaste la 9 de Julio con éxito!\n\nPresioná 'R' para jugar de nuevo", color(30, 120, 60));
+      dibujarPantallaVictoria();
       break;
   }
 }
@@ -104,10 +123,9 @@ function dibujarEscenario() {
   noStroke();
 
   // FILA 0: META / VEREDA NORTE Y OBELISCO
-  fill(180, 200, 180);
+  fill(180);
   rect(0, 0, width, GRID_SIZE);
-  fill(220);
-  triangle(width / 2 - 20, GRID_SIZE, width / 2 + 20, GRID_SIZE, width / 2, 10);
+  
 
   // FILAS 1 A 6: CARRILES SENTIDO NORTE
   fill(50);
@@ -122,7 +140,7 @@ function dibujarEscenario() {
   rect(0, GRID_SIZE * 9, width, GRID_SIZE * 6);
 
   // FILA 15: VEREDA INICIAL DE SALIDA
-  fill(40, 140, 60);
+  fill(180); // Gris claro
   rect(0, GRID_SIZE * 15, width, GRID_SIZE);
 
   // LÍNEAS DIVISORIAS PROVISORIAS
@@ -137,11 +155,9 @@ function dibujarEscenario() {
   }
 }
 
-// CONTROLES Y MANEJO DE TECLADO 
+// CONTROLES Y MANEJO DE TECLADO Y MOUSE
 function keyPressed() {
-  if (estado === "INICIO" && keyCode === ENTER) {
-    estado = "INSTRUCCIONES";
-  } else if (estado === "INSTRUCCIONES" && keyCode === ENTER) {
+  if (estado === "INSTRUCCIONES" && keyCode === ENTER) {
     estado = "GAMEPLAY";
   } else if (estado === "GAMEPLAY") {
     if (keyCode === UP_ARROW || key === 'w' || key === 'W') jugador.mover(0, -1);
@@ -158,28 +174,67 @@ function keyPressed() {
   }
 }
 
+function mouseClicked() {
+  if (estado === "INICIO") {
+    let btnX = 483;
+    let btnY = 539;
+    let btnAncho = imgBotonPlay.width;
+    let btnAlto = imgBotonPlay.height;
+
+    if (mouseX >= btnX && mouseX <= btnX + btnAncho &&
+        mouseY >= btnY && mouseY <= btnY + btnAlto) {
+      estado = "INSTRUCCIONES";
+    }
+  }
+}
+
 function reiniciarJuego() {
   jugador = new Jugador();
   vehiculos = [];
 
-  // Configuración inicial de vehículos
-  vehiculos.push(new Vehiculo(2, 4, 2, color(230, 50, 50)));   // Auto (2 celdas, derecha)
-  vehiculos.push(new Vehiculo(4, 7, 2, color(240, 200, 40)));  // Taxi (2 celdas, derecha)
-  vehiculos.push(new Vehiculo(6, 3, 3, color(40, 100, 220)));  // Colectivo (3 celdas, derecha)
+  // Configuración inicial de vehículos:
+  // Parametros: (filaGrid, velocidad, largoCeldas, tipo, colorFallback)
+  vehiculos.push(new Vehiculo(2, 4, 2, "auto"));                                  // Auto (2 tiles, derecha)
+  vehiculos.push(new Vehiculo(4, 7, 2, "taxi"));                                  // Taxi (2 tiles, derecha)
+  vehiculos.push(new Vehiculo(6, 3, 3, "colectivo", color(40, 100, 220)));       // Colectivo (3 celdas)
 
-  vehiculos.push(new Vehiculo(10, -5, 2, color(200, 200, 200))); // Auto (2 celdas, izquierda)
-  vehiculos.push(new Vehiculo(12, -8, 2, color(240, 200, 40)));  // Taxi (2 celdas, izquierda)
-  vehiculos.push(new Vehiculo(14, -4, 3, color(40, 100, 220)));  // Colectivo (3 celdas, izquierda)
+  vehiculos.push(new Vehiculo(10, -5, 2, "auto"));                                 // Auto (2 tiles, izquierda)
+  vehiculos.push(new Vehiculo(12, -8, 2, "taxi"));                                 // Taxi (2 tiles, izquierda)
+  vehiculos.push(new Vehiculo(14, -4, 3, "colectivo", color(40, 100, 220)));      // Colectivo (3 celdas)
 }
 
 // DIBUJO DE INTERFAZ Y PANTALLAS
 function dibujarHUD() {
-  fill(255);
+  fill(0);
   noStroke();
   textSize(20);
   textAlign(LEFT, TOP);
   text("Vidas: " + jugador.vidas, 20, 20);
 }
+
+function dibujarPantallaInicio() {
+  image(imgFondoInicio, 0, 0, width, height);
+  image(imgTitulo, 350, 357);
+  image(imgBotonPlay, 483, 539);
+}
+function dibujarPantallaInstrucciones() {
+  image(imgInstrucciones, 0, 0, width, height);
+}
+
+function dibujarPantallaVictoria() {
+  background(15); // Fondo oscuro para los bordes sobrantes del canvas
+
+  // Centrado respetando resolución original
+  let x = (width - imgWinScreen.width) / 2;
+  let y = (height - imgWinScreen.height) / 2;
+  image(imgWinScreen, x, y);
+
+  // Modificá estos valores para ubicar el botón
+  let botonX = 580;
+  let botonY = 640;
+
+  image(imgRewindButton, botonX, botonY);
+} 
 
 function dibujarPantallaTexto(titulo, subtitulo, colorTarjeta = color(20)) {
   background(15);
@@ -241,10 +296,11 @@ class Jugador {
 
 // CLASE VEHICULO 
 class Vehiculo {
-  constructor(filaGrid, velocidad, largoCeldas, colorVehiculo) {
+  constructor(filaGrid, velocidad, largoCeldas, tipo = "auto", colorVehiculo = color(200)) {
     this.gridY = filaGrid;
     this.velocidad = velocidad;
     this.largoCeldas = largoCeldas;
+    this.tipo = tipo; // "auto", "taxi" o "colectivo"
     this.color = colorVehiculo;
 
     this.ancho = this.largoCeldas * GRID_SIZE;
@@ -266,8 +322,7 @@ class Vehiculo {
     let y = this.gridY * GRID_SIZE + 4;
     let alto = GRID_SIZE - 8;
 
-    // Diferenciación de dibujo según el tipo de vehículo
-    if (this.color.toString() === color(240, 200, 40).toString() || this.largoCeldas === 2 && this.color.toString() === color(240, 200, 40).toString()) {
+    if (this.tipo === "taxi") {
       // TAXI (2 tiles)
       if (this.velocidad > 0) {
         image(imgTaxi1Derecha, this.x, y, GRID_SIZE, alto);
@@ -276,8 +331,8 @@ class Vehiculo {
         image(imgTaxi1, this.x, y, GRID_SIZE, alto);
         image(imgTaxi2, this.x + GRID_SIZE, y, GRID_SIZE, alto);
       }
-    } else if (this.largoCeldas === 2) {
-      // AUTO ROJO / GRIS (2 tiles)
+    } else if (this.tipo === "auto") {
+      // AUTO (2 tiles)
       if (this.velocidad > 0) {
         image(imgAuto1Derecha, this.x, y, GRID_SIZE, alto);
         image(imgAuto2Derecha, this.x + GRID_SIZE, y, GRID_SIZE, alto);
@@ -286,7 +341,7 @@ class Vehiculo {
         image(imgAuto1, this.x + GRID_SIZE, y, GRID_SIZE, alto);
       }
     } else {
-      // COLECTIVOS (3 celdas)
+      // COLECTIVOS / OTROS (Rectángulo provisorio)
       stroke(0);
       strokeWeight(2);
       fill(this.color);
