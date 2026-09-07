@@ -7,26 +7,31 @@ let estado = "INICIO"; // inicio, instrucciones, etc.
 let jugador;
 let vehiculos = [];
 
-
-let imgObelisco, imgVereda, imgAsfalto, imgMetrobus, imgJugador, imgAuto, imgColectivo, imgTaxi;
+let imgObelisco, imgVereda, imgAsfalto, imgMetrobus, imgJugador;
+let imgAuto1Derecha, imgAuto2Derecha, imgAuto1, imgAuto2, imgColectivo, imgTaxi;
 let fuentePixel, fuenteTitulo;
 
 function preload() {
- 
   imgJugador = loadImage('img/personaje.png');
+  
+  // Derecha 
+  imgAuto1Derecha = loadImage('img/auto1-derecha.png');
+  imgAuto2Derecha = loadImage('img/auto2-derecha.png');
 
-  // Carga de imágenes suplementarias 
+  // Izquierda
+  imgAuto1 = loadImage('img/auto2.png');
+  imgAuto2 = loadImage('img/auto1.png');
+
+  // Carga de imágenes suplementarias (descomentar según uso)
   // imgObelisco = loadImage('assets/obelisco.png');
   // imgVereda   = loadImage('assets/vereda.png');
   // imgAsfalto  = loadImage('assets/asfalto.png');
   // imgMetrobus = loadImage('assets/metrobus.png');
-  // imgAuto     = loadImage('assets/auto.png');
   // imgColectivo= loadImage('assets/colectivo.png');
   // imgTaxi     = loadImage('assets/taxi.png');
 }
 
 function setup() {
-
   createCanvas(1280, 1024);
 
   // renderizado de píxeles Pixel Art
@@ -92,27 +97,22 @@ function dibujarEscenario() {
   // FILA 0: META / VEREDA NORTE Y OBELISCO
   fill(180, 200, 180);
   rect(0, 0, width, GRID_SIZE);
-  // image(imgObelisco, width/2 - GRID_SIZE/2, 0, GRID_SIZE, GRID_SIZE);
   fill(220);
   triangle(width / 2 - 20, GRID_SIZE, width / 2 + 20, GRID_SIZE, width / 2, 10);
 
   // FILAS 1 A 6: CARRILES SENTIDO NORTE
-  // repetir patrón de fondo con imgAsfalto en un bucle for()
   fill(50);
   rect(0, GRID_SIZE * 1, width, GRID_SIZE * 6);
 
-  // FILAS 7 Y 8: BULEVAR CENTRAL /  METROBUS
-  // Usar imgMetrobus o imgVereda para decorar el bulevar central
+  // FILAS 7 Y 8: BULEVAR CENTRAL / METROBUS
   fill(40, 140, 60);
   rect(0, GRID_SIZE * 7, width, GRID_SIZE * 2);
 
   // FILAS 9 A 14: CARRILES SENTIDO SUR
-  //  Repetir patrón de fondo con imgAsfalto en un bucle for()
   fill(50);
   rect(0, GRID_SIZE * 9, width, GRID_SIZE * 6);
 
   // FILA 15: VEREDA INICIAL DE SALIDA
-  // Reemplazar por patrón repetido con imgVereda
   fill(40, 140, 60);
   rect(0, GRID_SIZE * 15, width, GRID_SIZE);
 
@@ -154,11 +154,11 @@ function reiniciarJuego() {
   vehiculos = [];
 
   // Configuración inicial de vehículos
-  vehiculos.push(new Vehiculo(2, 4, 2, color(230, 50, 50)));   // Auto Rojo
+  vehiculos.push(new Vehiculo(2, 4, 2, color(230, 50, 50)));   // Auto compuesto por tiles derecha
   vehiculos.push(new Vehiculo(4, 7, 1, color(240, 200, 40)));  // Taxi
   vehiculos.push(new Vehiculo(6, 3, 3, color(40, 100, 220)));  // Colectivo
 
-  vehiculos.push(new Vehiculo(10, -5, 2, color(200, 200, 200))); // Auto Gris
+  vehiculos.push(new Vehiculo(10, -5, 2, color(200, 200, 200))); // Auto compuesto por tiles izquierda
   vehiculos.push(new Vehiculo(12, -8, 1, color(240, 200, 40)));  // Taxi
   vehiculos.push(new Vehiculo(14, -4, 3, color(40, 100, 220)));  // Colectivo
 }
@@ -223,7 +223,6 @@ class Jugador {
     let x = this.gridX * GRID_SIZE;
     let y = this.gridY * GRID_SIZE;
     
-    // Se dibuja el sprite cargado en imgJugador
     image(imgJugador, x, y, GRID_SIZE, GRID_SIZE);
   }
 
@@ -255,14 +254,27 @@ class Vehiculo {
   }
 
   dibujar() {
-    let y = this.gridY * GRID_SIZE;
+    let y = this.gridY * GRID_SIZE + 4;
     let alto = GRID_SIZE - 8;
 
-    // image(imgAuto, this.x, y + 4, this.ancho, alto);
-    stroke(0);
-    strokeWeight(2);
-    fill(this.color);
-    rect(this.x, y + 4, this.ancho, alto, 8);
+    // Si el vehículo mide 2 celdas de largo, se renderiza usando los tiles
+    if (this.largoCeldas === 2) {
+      if (this.velocidad > 0) {
+        // Sentido DERECHA: usa auto1-derecha y auto2-derecha
+        image(imgAuto1Derecha, this.x, y, GRID_SIZE, alto);
+        image(imgAuto2Derecha, this.x + GRID_SIZE, y, GRID_SIZE, alto);
+      } else {
+        // Sentido IZQUIERDA: usa auto2 y auto1
+        image(imgAuto2, this.x, y, GRID_SIZE, alto);
+        image(imgAuto1, this.x + GRID_SIZE, y, GRID_SIZE, alto);
+      }
+    } else {
+      // colectivos
+      stroke(0);
+      strokeWeight(2);
+      fill(this.color);
+      rect(this.x, y, this.ancho, alto, 8);
+    }
   }
 
   colisionaCon(jugador) {
