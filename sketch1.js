@@ -7,11 +7,10 @@ let estado = "INICIO"; // inicio, instrucciones, etc.
 let jugador;
 let vehiculos = [];
 
-
 let imgObelisco, imgVereda, imgAsfalto, imgMetrobus, imgJugador;
 let imgAuto1Derecha, imgAuto2Derecha, imgAuto1, imgAuto2;
 let imgTaxi1Derecha, imgTaxi2Derecha, imgTaxi1, imgTaxi2;
-
+let imgColectivo;
 
 let fuentePixel, fuenteTitulo;
 let imgWinScreen, imgRewindButton;
@@ -54,6 +53,7 @@ function preload() {
   imgInstrucciones = loadImage('img/ui/instrucciones-pantalla.png');
   imgWinScreen     = loadImage('img/ui/win-screen.png');
   imgRewindButton  = loadImage('img/ui/rewind-button.png');
+
 }
 
 function setup() {
