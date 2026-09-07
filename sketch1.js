@@ -43,7 +43,7 @@ function draw() {
       dibujarPantallaTexto("HORA PICO", "Presioná ENTER para ver instrucciones");
       break;
     case "INSTRUCCIONES":
-      dibujarPantallaTexto("INSTRUCCIONES", "Usa WASD o Flechas para moverte.\nLlega al Obelisco cruzando el tráfico.\n\nPresioná ENTER para jugar");
+      dibujarPantallaTexto("INSTRUCCIONES", "Usa WASD o Flechas para moverte.\nLlega al otro lado cruzando el tráfico.\n\nPresioná ENTER para jugar");
       break;
     case "GAMEPLAY":
       ejecutarGameplay();
@@ -52,7 +52,7 @@ function draw() {
       dibujarPantallaTexto("¡TE ATROPELLARON!", "Te quedaste sin vidas.\n\nPresioná 'R' para reiniciar", color(150, 30, 30));
       break;
     case "VICTORIA":
-      dibujarPantallaTexto("¡LLEGASTE AL OBELISCO!", "¡Cruzaste la 9 de Julio con éxito!\n\nPresioná 'R' para jugar de nuevo", color(30, 120, 60));
+      dibujarPantallaTexto("¡ENTREGASTE TU PEDIDO!", "¡Cruzaste la 9 de Julio con éxito!\n\nPresioná 'R' para jugar de nuevo", color(30, 120, 60));
       break;
   }
 }
