@@ -3,17 +3,16 @@ const GRID_SIZE = 64;
 const COLS = 20; // 1280 / 64
 const ROWS = 16; // 1024 / 64
 
-let estado = "INICIO"; // INICIO, INSTRUCCIONES, GAMEPLAY, GAMEOVER, VICTORIA
+let estado = "INICIO"; // inicio, instrucciones, etc. 
 let jugador;
 let vehiculos = [];
 
-// TILES: Declaración de variables globales para imágenes y fuentes
 
 let imgObelisco, imgVereda, imgAsfalto, imgMetrobus, imgJugador, imgAuto, imgColectivo, imgTaxi;
 let fuentePixel, fuenteTitulo;
 
 function preload() {
-  // Carga del sprite del personaje
+ 
   imgJugador = loadImage('img/personaje.png');
 
   // Carga de imágenes suplementarias 
@@ -30,7 +29,7 @@ function setup() {
 
   createCanvas(1280, 1024);
 
-  // renderizado de píxeles nítido para arte 2D/Pixel Art
+  // renderizado de píxeles Pixel Art
   noSmooth();
 
   reiniciarJuego();
@@ -41,7 +40,7 @@ function draw() {
 
   switch (estado) {
     case "INICIO":
-      dibujarPantallaTexto("CRAZY 9 DE JULIO", "Presioná ENTER para ver instrucciones");
+      dibujarPantallaTexto("HORA PICO", "Presioná ENTER para ver instrucciones");
       break;
     case "INSTRUCCIONES":
       dibujarPantallaTexto("INSTRUCCIONES", "Usa WASD o Flechas para moverte.\nLlega al Obelisco cruzando el tráfico.\n\nPresioná ENTER para jugar");
@@ -58,7 +57,7 @@ function draw() {
   }
 }
 
-// LÓGICA PRINCIPAL DE GAMEPLAY 
+// LÓGICA PRINCIPAL
 function ejecutarGameplay() {
   dibujarEscenario();
 
@@ -93,27 +92,27 @@ function dibujarEscenario() {
   // FILA 0: META / VEREDA NORTE Y OBELISCO
   fill(180, 200, 180);
   rect(0, 0, width, GRID_SIZE);
-  // TODO: Reemplazar el triángulo provisorio por: image(imgObelisco, width/2 - GRID_SIZE/2, 0, GRID_SIZE, GRID_SIZE);
+  // image(imgObelisco, width/2 - GRID_SIZE/2, 0, GRID_SIZE, GRID_SIZE);
   fill(220);
   triangle(width / 2 - 20, GRID_SIZE, width / 2 + 20, GRID_SIZE, width / 2, 10);
 
   // FILAS 1 A 6: CARRILES SENTIDO NORTE
-  // TODO: Repetir patrón de fondo con imgAsfalto en un bucle for()
+  // repetir patrón de fondo con imgAsfalto en un bucle for()
   fill(50);
   rect(0, GRID_SIZE * 1, width, GRID_SIZE * 6);
 
-  // FILAS 7 Y 8: BULEVAR CENTRAL / CANTERO / METROBUS
-  // TODO: Usar imgMetrobus o imgVereda para decorar el bulevar central
+  // FILAS 7 Y 8: BULEVAR CENTRAL /  METROBUS
+  // Usar imgMetrobus o imgVereda para decorar el bulevar central
   fill(40, 140, 60);
   rect(0, GRID_SIZE * 7, width, GRID_SIZE * 2);
 
   // FILAS 9 A 14: CARRILES SENTIDO SUR
-  // TODO: Repetir patrón de fondo con imgAsfalto en un bucle for()
+  //  Repetir patrón de fondo con imgAsfalto en un bucle for()
   fill(50);
   rect(0, GRID_SIZE * 9, width, GRID_SIZE * 6);
 
   // FILA 15: VEREDA INICIAL DE SALIDA
-  // TODO: Reemplazar por patrón repetido con imgVereda
+  // Reemplazar por patrón repetido con imgVereda
   fill(40, 140, 60);
   rect(0, GRID_SIZE * 15, width, GRID_SIZE);
 
@@ -224,7 +223,7 @@ class Jugador {
     let x = this.gridX * GRID_SIZE;
     let y = this.gridY * GRID_SIZE;
     
-    // TODO: TILES - Se dibuja el sprite cargado en imgJugador
+    // Se dibuja el sprite cargado en imgJugador
     image(imgJugador, x, y, GRID_SIZE, GRID_SIZE);
   }
 
@@ -259,8 +258,7 @@ class Vehiculo {
     let y = this.gridY * GRID_SIZE;
     let alto = GRID_SIZE - 8;
 
-    // TODO: TILES - Reemplazar la figura rect() por imágenes de autos/colectivos:
-    // Ejemplo: image(imgAuto, this.x, y + 4, this.ancho, alto);
+    // image(imgAuto, this.x, y + 4, this.ancho, alto);
     stroke(0);
     strokeWeight(2);
     fill(this.color);
