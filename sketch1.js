@@ -8,19 +8,29 @@ let jugador;
 let vehiculos = [];
 
 let imgObelisco, imgVereda, imgAsfalto, imgMetrobus, imgJugador;
-let imgAuto1Derecha, imgAuto2Derecha, imgAuto1, imgAuto2, imgColectivo, imgTaxi;
+let imgAuto1Derecha, imgAuto2Derecha, imgAuto1, imgAuto2;
+let imgTaxi1Derecha, imgTaxi2Derecha, imgTaxi1, imgTaxi2;
+let imgColectivo;
 let fuentePixel, fuenteTitulo;
 
 function preload() {
   imgJugador = loadImage('img/personaje.png');
   
-  // Derecha 
+  // Autos - Derecha 
   imgAuto1Derecha = loadImage('img/auto1-derecha.png');
   imgAuto2Derecha = loadImage('img/auto2-derecha.png');
 
-  // Izquierda
+  // Autos - Izquierda
   imgAuto1 = loadImage('img/auto2.png');
   imgAuto2 = loadImage('img/auto1.png');
+
+  // Taxi - Derecha
+  imgTaxi1Derecha = loadImage('img/taxi1_derecha.png');
+  imgTaxi2Derecha = loadImage('img/taxi2_derecha.png');
+
+  // Taxi - Izquierda
+  imgTaxi1 = loadImage('img/taxi2.png');
+  imgTaxi2 = loadImage('img/taxi1.png');
 
   // Carga de imágenes suplementarias (descomentar según uso)
   // imgObelisco = loadImage('assets/obelisco.png');
@@ -28,13 +38,12 @@ function preload() {
   // imgAsfalto  = loadImage('assets/asfalto.png');
   // imgMetrobus = loadImage('assets/metrobus.png');
   // imgColectivo= loadImage('assets/colectivo.png');
-  // imgTaxi     = loadImage('assets/taxi.png');
 }
 
 function setup() {
   createCanvas(1280, 1024);
 
-  // renderizado de píxeles Pixel Art
+  // Renderizado de píxeles Pixel Art
   noSmooth();
 
   reiniciarJuego();
@@ -154,13 +163,13 @@ function reiniciarJuego() {
   vehiculos = [];
 
   // Configuración inicial de vehículos
-  vehiculos.push(new Vehiculo(2, 4, 2, color(230, 50, 50)));   // Auto compuesto por tiles derecha
-  vehiculos.push(new Vehiculo(4, 7, 1, color(240, 200, 40)));  // Taxi
-  vehiculos.push(new Vehiculo(6, 3, 3, color(40, 100, 220)));  // Colectivo
+  vehiculos.push(new Vehiculo(2, 4, 2, color(230, 50, 50)));   // Auto (2 celdas, derecha)
+  vehiculos.push(new Vehiculo(4, 7, 2, color(240, 200, 40)));  // Taxi (2 celdas, derecha)
+  vehiculos.push(new Vehiculo(6, 3, 3, color(40, 100, 220)));  // Colectivo (3 celdas, derecha)
 
-  vehiculos.push(new Vehiculo(10, -5, 2, color(200, 200, 200))); // Auto compuesto por tiles izquierda
-  vehiculos.push(new Vehiculo(12, -8, 1, color(240, 200, 40)));  // Taxi
-  vehiculos.push(new Vehiculo(14, -4, 3, color(40, 100, 220)));  // Colectivo
+  vehiculos.push(new Vehiculo(10, -5, 2, color(200, 200, 200))); // Auto (2 celdas, izquierda)
+  vehiculos.push(new Vehiculo(12, -8, 2, color(240, 200, 40)));  // Taxi (2 celdas, izquierda)
+  vehiculos.push(new Vehiculo(14, -4, 3, color(40, 100, 220)));  // Colectivo (3 celdas, izquierda)
 }
 
 // DIBUJO DE INTERFAZ Y PANTALLAS
@@ -257,19 +266,27 @@ class Vehiculo {
     let y = this.gridY * GRID_SIZE + 4;
     let alto = GRID_SIZE - 8;
 
-    // Si el vehículo mide 2 celdas de largo, se renderiza usando los tiles
-    if (this.largoCeldas === 2) {
+    // Diferenciación de dibujo según el tipo de vehículo
+    if (this.color.toString() === color(240, 200, 40).toString() || this.largoCeldas === 2 && this.color.toString() === color(240, 200, 40).toString()) {
+      // TAXI (2 tiles)
       if (this.velocidad > 0) {
-        // Sentido DERECHA: usa auto1-derecha y auto2-derecha
+        image(imgTaxi1Derecha, this.x, y, GRID_SIZE, alto);
+        image(imgTaxi2Derecha, this.x + GRID_SIZE, y, GRID_SIZE, alto);
+      } else {
+        image(imgTaxi1, this.x, y, GRID_SIZE, alto);
+        image(imgTaxi2, this.x + GRID_SIZE, y, GRID_SIZE, alto);
+      }
+    } else if (this.largoCeldas === 2) {
+      // AUTO ROJO / GRIS (2 tiles)
+      if (this.velocidad > 0) {
         image(imgAuto1Derecha, this.x, y, GRID_SIZE, alto);
         image(imgAuto2Derecha, this.x + GRID_SIZE, y, GRID_SIZE, alto);
       } else {
-        // Sentido IZQUIERDA: usa auto2 y auto1
         image(imgAuto2, this.x, y, GRID_SIZE, alto);
         image(imgAuto1, this.x + GRID_SIZE, y, GRID_SIZE, alto);
       }
     } else {
-      // colectivos
+      // COLECTIVOS (3 celdas)
       stroke(0);
       strokeWeight(2);
       fill(this.color);
