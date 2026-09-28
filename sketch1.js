@@ -10,7 +10,7 @@ let vehiculos = [];
 let imgObelisco, imgVereda, imgAsfalto, imgMetrobus, imgJugador, imgAuto, imgColectivo, imgTaxi;
 let imgAuto1Derecha, imgAuto2Derecha, imgAuto1, imgAuto2;
 let imgTaxi1Derecha, imgTaxi2Derecha, imgTaxi1, imgTaxi2;
-let imgMotoDerecha, imgMoto;
+let imgMoto, imgMotoIzquierda;
 let fuentePixelify;
 
 // UI: Declaración de variables para la interfaz
@@ -41,6 +41,9 @@ function preload() {
   // Taxis - Izquierda
   imgTaxi1 = loadImage('img/taxi1.png');
   imgTaxi2 = loadImage('img/taxi2.png');
+  //Moto
+  imgMoto = loadImage('img/moto.png');                
+  imgMotoIzquierda = loadImage('img/moto-izquierda.png'); 
   // Carga de tipografía
   fuentePixelify = loadFont('tipografia/PixelifySans-Regular.ttf');
   // Carga de UI Inicio y Niveles
@@ -493,10 +496,11 @@ class Vehiculo {
         image(imgAuto1, this.x + GRID_SIZE, y, GRID_SIZE, alto);
       }
     } else if (this.tipo === "moto") {
-      stroke(0);
-      strokeWeight(2);
-      fill(this.color);
-      rect(this.x, y, this.ancho, alto, 4);
+      if (this.velocidad > 0) {
+        image(imgMoto, this.x, y, this.ancho, alto);
+      } else {
+        image(imgMotoIzquierda, this.x, y, this.ancho, alto);
+      }
     } else {
       stroke(0);
       strokeWeight(2);
