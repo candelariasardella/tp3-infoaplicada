@@ -2,7 +2,6 @@
 const GRID_SIZE = 64;
 const COLS = 20; // 1280 / 64
 const ROWS = 16; // 1024 / 64
-
 let estado = "INICIO"; // INICIO, NIVELES, INSTRUCCIONES, GAMEPLAY, GAMEOVER, VICTORIA
 let nivelActual = 1;
 let estrellasGanadas = 0;
@@ -22,28 +21,28 @@ let imgGameOverScreen;
 let imgRewindButton, imgNextButton, imgBackButton;
 let imgCorazon;
 
+// TIMER VARIABLES
+let tiempoInicio = 0;
+let tiempoFinal = 0;
+let tiempoJugadoSegundos = 0;
+
 function preload() {
   imgJugador = loadImage('img/personaje.png');
   
   // Autos - Derecha 
   imgAuto1Derecha = loadImage('img/auto1-derecha.png');
   imgAuto2Derecha = loadImage('img/auto2-derecha.png');
-
   // Autos - Izquierda
   imgAuto1 = loadImage('img/auto2.png');
   imgAuto2 = loadImage('img/auto1.png');
-
   // Taxis - Derecha
   imgTaxi1Derecha = loadImage('img/taxi1_derecha.png');
   imgTaxi2Derecha = loadImage('img/taxi2_derecha.png');
-
   // Taxis - Izquierda
   imgTaxi1 = loadImage('img/taxi1.png');
   imgTaxi2 = loadImage('img/taxi2.png');
-
   // Carga de tipografía
   fuentePixelify = loadFont('tipografia/PixelifySans-Regular.ttf');
-
   // Carga de UI Inicio y Niveles
   imgFondoInicio   = loadImage('img/ui/fondo-inicio.png');
   imgTitulo        = loadImage('img/ui/titulo.png');
@@ -52,15 +51,12 @@ function preload() {
   imgLevel1        = loadImage('img/ui/level_1.png');
   imgLevel2        = loadImage('img/ui/level_2.png');
   imgLevel3        = loadImage('img/ui/level_3.png');
-
   // Pantallas de Victoria según estrellas (0 a 3)
   for (let i = 0; i <= 3; i++) {
     imgWinScreens[i] = loadImage(`img/ui/win-${i}-stars-screen.png`);
   }
-
   // Pantalla de Game Over
   imgGameOverScreen = loadImage('img/ui/te-chocaron-screen.png');
-
   // Botones de Interfaces
   imgRewindButton = loadImage('img/ui/rewind-button.png');
   imgNextButton   = loadImage('img/ui/next-button.png');
@@ -76,7 +72,6 @@ function setup() {
 
 function draw() {
   background(30);
-
   switch (estado) {
     case "INICIO":
       dibujarPantallaInicio();
@@ -102,11 +97,9 @@ function draw() {
 // LÓGICA PRINCIPAL
 function ejecutarGameplay() {
   dibujarEscenario();
-
   for (let v of vehiculos) {
     v.actualizar();
     v.dibujar();
-
     if (v.colisionaCon(jugador)) {
       jugador.perderVida();
       if (jugador.vidas <= 0) {
@@ -114,15 +107,15 @@ function ejecutarGameplay() {
       }
     }
   }
-
   jugador.dibujar();
 
   // Condición de Victoria
   if (jugador.gridY === 0) {
+    tiempoFinal = millis();
+    tiempoJugadoSegundos = ((tiempoFinal - tiempoInicio) / 1000).toFixed(1);
     estrellasGanadas = calcularEstrellas();
     estado = "VICTORIA";
   }
-
   dibujarHUD();
 }
 
@@ -136,27 +129,21 @@ function calcularEstrellas() {
 // ESCENARIO 
 function dibujarEscenario() {
   noStroke();
-
   // FILA 0: META / VEREDA NORTE
   fill(180);
   rect(0, 0, width, GRID_SIZE);
-
   // FILAS 1 A 6: CARRILES SENTIDO NORTE
   fill(50);
   rect(0, GRID_SIZE * 1, width, GRID_SIZE * 6);
-
   // FILAS 7 Y 8: BULEVAR CENTRAL / METROBUS
   fill(40, 140, 60);
   rect(0, GRID_SIZE * 7, width, GRID_SIZE * 2);
-
   // FILAS 9 A 14: CARRILES SENTIDO SUR
   fill(50);
   rect(0, GRID_SIZE * 9, width, GRID_SIZE * 6);
-
   // FILA 15: VEREDA INICIAL DE SALIDA
   fill(180);
   rect(0, GRID_SIZE * 15, width, GRID_SIZE);
-
   // LÍNEAS DIVISORIAS
   stroke(255, 200, 0);
   strokeWeight(2);
@@ -182,7 +169,6 @@ function keyPressed() {
     reiniciarJuego();
     estado = "GAMEPLAY";
   }
-
   if ([37, 38, 39, 40, 32].includes(keyCode)) {
     return false;
   }
@@ -194,7 +180,6 @@ function mouseClicked() {
     let btnY = 539;
     let btnAncho = imgBotonPlay.width;
     let btnAlto = imgBotonPlay.height;
-
     if (mouseX >= btnX && mouseX <= btnX + btnAncho &&
         mouseY >= btnY && mouseY <= btnY + btnAlto) {
       estado = "NIVELES";
@@ -208,19 +193,15 @@ function mouseClicked() {
       estado = "INICIO";
       return;
     }
-
     let gap = 40;
     let anchoBoton = imgLevel1.width;
     let altoBoton = imgLevel1.height;
     let anchoTotal = (anchoBoton * 3) + (gap * 2);
-
     let inicioX = (width - anchoTotal) / 2;
     let btnY = (height - altoBoton) / 2 + 50;
-
     let x1 = inicioX;
     let x2 = inicioX + anchoBoton + gap;
     let x3 = inicioX + (anchoBoton + gap) * 2;
-
     if (mouseX >= x1 && mouseX <= x1 + anchoBoton && mouseY >= btnY && mouseY <= btnY + altoBoton) {
       nivelActual = 1;
       reiniciarJuego();
@@ -239,11 +220,9 @@ function mouseClicked() {
     let anchoBoton = imgRewindButton.width;
     let altoBoton = imgRewindButton.height;
     let btnY = 640;
-
     let xRewind = (width - anchoBoton) / 2;
     let xBack = xRewind - anchoBoton - gap;
     let xNext = xRewind + anchoBoton + gap;
-
     if (mouseX >= xBack && mouseX <= xBack + anchoBoton && mouseY >= btnY && mouseY <= btnY + altoBoton) {
       estado = "NIVELES";
     } else if (mouseX >= xRewind && mouseX <= xRewind + anchoBoton && mouseY >= btnY && mouseY <= btnY + altoBoton) {
@@ -261,11 +240,9 @@ function mouseClicked() {
     let anchoBoton = imgRewindButton.width;
     let altoBoton = imgRewindButton.height;
     let btnY = 640;
-
     let anchoTotal = (anchoBoton * 2) + gap;
     let xBack = (width - anchoTotal) / 2;
     let xRewind = xBack + anchoBoton + gap;
-
     if (mouseX >= xBack && mouseX <= xBack + anchoBoton && mouseY >= btnY && mouseY <= btnY + altoBoton) {
       estado = "NIVELES";
     } else if (mouseX >= xRewind && mouseX <= xRewind + anchoBoton && mouseY >= btnY && mouseY <= btnY + altoBoton) {
@@ -278,14 +255,11 @@ function mouseClicked() {
 function reiniciarJuego() {
   jugador = new Jugador();
   vehiculos = [];
-
   const VEL_COLECTIVO = 3;
   const VEL_AUTO = 5;
   const VEL_MOTO = 8;
-
   let configCarrilesNorte = [];
   let configCarrilesSur = [];
-
   if (nivelActual === 1) {
     configCarrilesNorte.push({ fila: 1, tipo: "auto", cantidad: 2, vel: VEL_AUTO, largo: 2, color: color(200), desfase: 0 });
     configCarrilesNorte.push({ fila: 2, tipo: "auto", cantidad: 1, vel: VEL_AUTO, largo: 2, color: color(200), desfase: 600 });
@@ -293,14 +267,12 @@ function reiniciarJuego() {
     configCarrilesNorte.push({ fila: 4, tipo: "auto", cantidad: 1, vel: VEL_AUTO, largo: 2, color: color(200), desfase: 100 });
     configCarrilesNorte.push({ fila: 5, tipo: "auto", cantidad: 2, vel: VEL_AUTO, largo: 2, color: color(200), desfase: 750 });
     configCarrilesNorte.push({ fila: 6, tipo: "auto", cantidad: 1, vel: VEL_AUTO, largo: 2, color: color(200), desfase: 420 });
-
     configCarrilesSur.push({ fila: 9,  tipo: "auto", cantidad: 1, vel: -VEL_AUTO, largo: 2, color: color(200), desfase: 200 });
     configCarrilesSur.push({ fila: 10, tipo: "auto", cantidad: 2, vel: -VEL_AUTO, largo: 2, color: color(200), desfase: 800 });
     configCarrilesSur.push({ fila: 11, tipo: "auto", cantidad: 1, vel: -VEL_AUTO, largo: 2, color: color(200), desfase: 450 });
     configCarrilesSur.push({ fila: 12, tipo: "auto", cantidad: 2, vel: -VEL_AUTO, largo: 2, color: color(200), desfase: 150 });
     configCarrilesSur.push({ fila: 13, tipo: "auto", cantidad: 1, vel: -VEL_AUTO, largo: 2, color: color(200), desfase: 700 });
     configCarrilesSur.push({ fila: 14, tipo: "auto", cantidad: 2, vel: -VEL_AUTO, largo: 2, color: color(200), desfase: 350 });
-
   } else if (nivelActual === 2) {
     for (let f = 1; f <= 6; f++) {
       let esMoto = (f === 2 || f === 5);
@@ -324,7 +296,6 @@ function reiniciarJuego() {
         color: esMoto ? color(220, 100, 40) : color(200)
       });
     }
-
   } else if (nivelActual === 3) {
     for (let f = 1; f <= 6; f++) {
       if (f === 6) {
@@ -335,7 +306,6 @@ function reiniciarJuego() {
         configCarrilesNorte.push({ fila: f, tipo: "auto", cantidad: 2, vel: VEL_AUTO, largo: 2, color: color(200) });
       }
     }
-
     for (let f = 9; f <= 14; f++) {
       if (f === 9) {
         configCarrilesSur.push({ fila: f, tipo: "colectivo", cantidad: 1, vel: -VEL_COLECTIVO, largo: 3, color: color(40, 100, 220) });
@@ -346,12 +316,10 @@ function reiniciarJuego() {
       }
     }
   }
-
   let todosLosCarriles = [...configCarrilesNorte, ...configCarrilesSur];
   for (let c of todosLosCarriles) {
     let distanciaSeparacion = width / c.cantidad;
     let desfaseFila = (c.desfase !== undefined) ? c.desfase : (c.fila * 180) % distanciaSeparacion;
-
     for (let i = 0; i < c.cantidad; i++) {
       let tipoReal = c.tipo === "auto" ? (i % 2 === 0 ? "auto" : "taxi") : c.tipo;
       let v = new Vehiculo(c.fila, c.vel, c.largo, tipoReal, c.color);
@@ -363,6 +331,8 @@ function reiniciarJuego() {
       vehiculos.push(v);
     }
   }
+
+  tiempoInicio = millis();
 }
 
 // DIBUJO DE INTERFAZ Y PANTALLAS
@@ -374,12 +344,16 @@ function dibujarHUD() {
   
   let textoVidas = "Vidas: " + jugador.vidas;
   text(textoVidas, 20, 20);
-
   let tamCorazon = 24;
   let corazonX = 20 + textWidth(textoVidas) + 8;
   let corazonY = 18;
-
   image(imgCorazon, corazonX, corazonY, tamCorazon, tamCorazon);
+
+  // Cronómetro en vivo
+  let tiempoActual = ((millis() - tiempoInicio) / 1000).toFixed(1);
+  textAlign(RIGHT, TOP);
+  fill(0);
+  text("Tiempo: " + tiempoActual + "s", width - 20, 20);
 }
 
 function dibujarPantallaInicio() {
@@ -390,26 +364,21 @@ function dibujarPantallaInicio() {
 
 function dibujarPantallaNiveles() {
   background('#A1CFF0');
-
   let backX = 40;
   let backY = 40;
   image(imgBackButton, backX, backY);
-
   textFont(fuentePixelify);
   textSize(96);
   textAlign(CENTER, CENTER);
   fill(0);
   noStroke();
   text("Seleccioná el nivel", width / 2, 280);
-
   let gap = 40;
   let anchoBoton = imgLevel1.width;
   let altoBoton = imgLevel1.height;
   let anchoTotal = (anchoBoton * 3) + (gap * 2);
-
   let inicioX = (width - anchoTotal) / 2;
   let btnY = (height - altoBoton) / 2 + 50;
-
   image(imgLevel1, inicioX, btnY);
   image(imgLevel2, inicioX + anchoBoton + gap, btnY);
   image(imgLevel3, inicioX + (anchoBoton + gap) * 2, btnY);
@@ -421,20 +390,24 @@ function dibujarPantallaInstrucciones() {
 
 function dibujarPantallaVictoria() {
   background(15);
-
   let pantallaWinActual = imgWinScreens[estrellasGanadas];
   let x = (width - pantallaWinActual.width) / 2;
   let y = (height - pantallaWinActual.height) / 2;
   image(pantallaWinActual, x, y);
 
+  // Tiempo final
+  textFont(fuentePixelify);
+  textSize(32);
+  fill(255);
+  textAlign(CENTER, CENTER);
+  text("Tiempo: " + tiempoJugadoSegundos + "s", width / 2, y + pantallaWinActual.height - 40);
+
   let gap = 40;
   let anchoBoton = imgRewindButton.width;
   let btnY = 640;
-
   let xRewind = (width - anchoBoton) / 2;
   let xBack = xRewind - anchoBoton - gap;
   let xNext = xRewind + anchoBoton + gap;
-
   image(imgBackButton, xBack, btnY);
   image(imgRewindButton, xRewind, btnY);
   image(imgNextButton, xNext, btnY);
@@ -442,19 +415,15 @@ function dibujarPantallaVictoria() {
 
 function dibujarPantallaGameOver() {
   background(15);
-
   let x = (width - imgGameOverScreen.width) / 2;
   let y = (height - imgGameOverScreen.height) / 2;
   image(imgGameOverScreen, x, y);
-
   let gap = 40;
   let anchoBoton = imgRewindButton.width;
   let btnY = 640;
-
   let anchoTotal = (anchoBoton * 2) + gap;
   let xBack = (width - anchoTotal) / 2;
   let xRewind = xBack + anchoBoton + gap;
-
   image(imgBackButton, xBack, btnY);
   image(imgRewindButton, xRewind, btnY);
 }
@@ -466,24 +435,20 @@ class Jugador {
     this.gridY = 15;
     this.vidas = 3;
   }
-
   mover(dirX, dirY) {
     this.gridX = constrain(this.gridX + dirX, 0, COLS - 1);
     this.gridY = constrain(this.gridY + dirY, 0, ROWS - 1);
   }
-
   perderVida() {
     this.vidas--;
     this.gridX = 10;
     this.gridY = 15;
   }
-
   dibujar() {
     let x = this.gridX * GRID_SIZE;
     let y = this.gridY * GRID_SIZE;
     image(imgJugador, x, y, GRID_SIZE, GRID_SIZE);
   }
-
   get x() { return this.gridX * GRID_SIZE; }
   get y() { return this.gridY * GRID_SIZE; }
 }
@@ -496,26 +461,21 @@ class Vehiculo {
     this.largoCeldas = largoCeldas;
     this.tipo = tipo;
     this.color = colorVehiculo;
-
     this.ancho = this.largoCeldas * GRID_SIZE;
     this.x = velocidad > 0 ? -this.ancho : width;
   }
-
   actualizar() {
     this.ancho = this.largoCeldas * GRID_SIZE;
     this.x += this.velocidad;
-
     if (this.velocidad > 0 && this.x > width) {
       this.x = -this.ancho;
     } else if (this.velocidad < 0 && this.x < -this.ancho) {
       this.x = width;
     }
   }
-
   dibujar() {
     let y = this.gridY * GRID_SIZE + 4;
     let alto = GRID_SIZE - 8;
-
     if (this.tipo === "taxi") {
       if (this.velocidad > 0) {
         image(imgTaxi1Derecha, this.x, y, GRID_SIZE, alto);
@@ -544,16 +504,13 @@ class Vehiculo {
       rect(this.x, y, this.ancho, alto, 8);
     }
   }
-
   colisionaCon(jugador) {
     let jX = jugador.x + 4;
     let jY = jugador.y + 4;
     let jAncho = GRID_SIZE - 8;
     let jAlto = GRID_SIZE - 8;
-
     let vY = this.gridY * GRID_SIZE + 4;
     let vAlto = GRID_SIZE - 8;
-
     return (
       jX < this.x + this.ancho &&
       jX + jAncho > this.x &&
