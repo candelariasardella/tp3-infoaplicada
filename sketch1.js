@@ -2,7 +2,7 @@
 const GRID_SIZE = 64;
 const COLS = 20; // 1280 / 64
 const ROWS = 16; // 1024 / 64
-let estado = "INICIO"; // INICIO, NIVELES, INSTRUCCIONES, GAMEPLAY, GAMEOVER, VICTORIA
+let estado = "APODO"; 
 let nivelActual = 1;
 let estrellasGanadas = 0;
 let jugador;
@@ -26,6 +26,21 @@ let tiempoInicio = 0;
 let tiempoFinal = 0;
 let tiempoJugadoSegundos = 0;
 
+// VARIABLES PARA MYSQL, RANKING Y MONEDAS
+let apodoGlobal = "";
+let resultadosNiveles = { 1: { tiempo: 0, estrellas: 0 }, 2: { tiempo: 0, estrellas: 0 }, 3: { tiempo: 0, estrellas: 0 } };
+let top5Ranking = [];
+let enviandoDatos = false;
+let monedas = [];
+let monedasRecolectadas = 0;
+
+// VARIABLES SPRITESHEET MONEDA
+let imgMonedaSprite;
+let monedaFrames = 12;
+let monedaFrameActual = 0;
+let contadorAnimacionMoneda = 0;
+let velAnimacionMoneda = 5;
+
 function preload() {
   imgJugador = loadImage('img/personaje.png');
   
@@ -44,6 +59,8 @@ function preload() {
   //Moto
   imgMoto = loadImage('img/moto.png');                
   imgMotoIzquierda = loadImage('img/moto-izquierda.png'); 
+  // Moneda Spritesheet
+  imgMonedaSprite = loadImage('img/unpeso-spritesheet.png');
   // Carga de tipografía
   fuentePixelify = loadFont('tipografia/PixelifySans-Regular.ttf');
   // Carga de UI Inicio y Niveles
@@ -76,6 +93,9 @@ function setup() {
 function draw() {
   background(30);
   switch (estado) {
+    case "APODO":
+      dibujarPantallaApodo();
+      break;
     case "INICIO":
       dibujarPantallaInicio();
       break;
@@ -94,12 +114,49 @@ function draw() {
     case "VICTORIA":
       dibujarPantallaVictoria();
       break;
+    case "RANKING":
+      dibujarPantallaRanking();
+      break;
   }
 }
 
 // LÓGICA PRINCIPAL
 function ejecutarGameplay() {
   dibujarEscenario();
+  
+  // Lógica para avanzar el frame de animación de las monedas
+  contadorAnimacionMoneda++;
+  if (contadorAnimacionMoneda >= velAnimacionMoneda) {
+    monedaFrameActual = (monedaFrameActual + 1) % monedaFrames;
+    contadorAnimacionMoneda = 0;
+  }
+
+  // DIBUJAR Y RECOLECTAR MONEDAS
+  for (let m of monedas) {
+    if (m.activa) {
+      let anchoFrame = imgMonedaSprite.width / monedaFrames;
+      let altoFrame = imgMonedaSprite.height;
+      let margen = 12;
+      
+      image(
+        imgMonedaSprite, 
+        m.x * GRID_SIZE + margen, 
+        m.y * GRID_SIZE + margen, 
+        GRID_SIZE - margen * 2, 
+        GRID_SIZE - margen * 2, 
+        monedaFrameActual * anchoFrame, 
+        0, 
+        anchoFrame, 
+        altoFrame
+      );
+      
+      if (jugador.gridX === m.x && jugador.gridY === m.y) {
+        m.activa = false;
+        monedasRecolectadas++;
+      }
+    }
+  }
+
   for (let v of vehiculos) {
     v.actualizar();
     v.dibujar();
@@ -116,38 +173,32 @@ function ejecutarGameplay() {
   if (jugador.gridY === 0) {
     tiempoFinal = millis();
     tiempoJugadoSegundos = ((tiempoFinal - tiempoInicio) / 1000).toFixed(1);
-    estrellasGanadas = calcularEstrellas();
+    estrellasGanadas = monedasRecolectadas; 
+    
+    resultadosNiveles[nivelActual] = {
+      tiempo: parseFloat(tiempoJugadoSegundos),
+      estrellas: estrellasGanadas
+    };
+
     estado = "VICTORIA";
   }
   dibujarHUD();
 }
 
-function calcularEstrellas() {
-  if (jugador.vidas >= 3) return 3;
-  if (jugador.vidas === 2) return 2;
-  if (jugador.vidas === 1) return 1;
-  return 0;
-}
-
 // ESCENARIO 
 function dibujarEscenario() {
   noStroke();
-  // FILA 0: META / VEREDA NORTE
   fill(180);
   rect(0, 0, width, GRID_SIZE);
-  // FILAS 1 A 6: CARRILES SENTIDO NORTE
   fill(50);
   rect(0, GRID_SIZE * 1, width, GRID_SIZE * 6);
-  // FILAS 7 Y 8: BULEVAR CENTRAL / METROBUS
   fill(40, 140, 60);
   rect(0, GRID_SIZE * 7, width, GRID_SIZE * 2);
-  // FILAS 9 A 14: CARRILES SENTIDO SUR
   fill(50);
   rect(0, GRID_SIZE * 9, width, GRID_SIZE * 6);
-  // FILA 15: VEREDA INICIAL DE SALIDA
   fill(180);
   rect(0, GRID_SIZE * 15, width, GRID_SIZE);
-  // LÍNEAS DIVISORIAS
+  
   stroke(255, 200, 0);
   strokeWeight(2);
   for (let r = 1; r < ROWS - 1; r++) {
@@ -161,6 +212,19 @@ function dibujarEscenario() {
 
 // CONTROLES Y MANEJO DE TECLADO Y MOUSE
 function keyPressed() {
+  if (estado === "APODO") {
+    if (keyCode >= 65 && keyCode <= 90 && apodoGlobal.length < 3) {
+      apodoGlobal += key.toUpperCase();
+    } 
+    else if (keyCode === BACKSPACE && apodoGlobal.length > 0) {
+      apodoGlobal = apodoGlobal.slice(0, -1);
+    } 
+    else if (keyCode === ENTER && apodoGlobal.length === 3) {
+      estado = "INICIO";
+    }
+    return false; 
+  }
+
   if (estado === "INSTRUCCIONES" && keyCode === ENTER) {
     estado = "GAMEPLAY";
   } else if (estado === "GAMEPLAY") {
@@ -183,16 +247,17 @@ function mouseClicked() {
     let btnY = 539;
     let btnAncho = imgBotonPlay.width;
     let btnAlto = imgBotonPlay.height;
-    if (mouseX >= btnX && mouseX <= btnX + btnAncho &&
-        mouseY >= btnY && mouseY <= btnY + btnAlto) {
+    if (mouseX >= btnX && mouseX <= btnX + btnAncho && mouseY >= btnY && mouseY <= btnY + btnAlto) {
       estado = "NIVELES";
     }
+    let rankY = 740;
+    if (mouseX >= width/2 - 120 && mouseX <= width/2 + 120 && mouseY >= rankY && mouseY <= rankY + 50) {
+      obtenerRanking(); 
+    }
   } else if (estado === "NIVELES") {
-    // Volver al Inicio
     let backX = 40;
     let backY = 40;
-    if (mouseX >= backX && mouseX <= backX + imgBackButton.width &&
-        mouseY >= backY && mouseY <= backY + imgBackButton.height) {
+    if (mouseX >= backX && mouseX <= backX + imgBackButton.width && mouseY >= backY && mouseY <= backY + imgBackButton.height) {
       estado = "INICIO";
       return;
     }
@@ -205,6 +270,7 @@ function mouseClicked() {
     let x1 = inicioX;
     let x2 = inicioX + anchoBoton + gap;
     let x3 = inicioX + (anchoBoton + gap) * 2;
+    
     if (mouseX >= x1 && mouseX <= x1 + anchoBoton && mouseY >= btnY && mouseY <= btnY + altoBoton) {
       nivelActual = 1;
       reiniciarJuego();
@@ -226,6 +292,7 @@ function mouseClicked() {
     let xRewind = (width - anchoBoton) / 2;
     let xBack = xRewind - anchoBoton - gap;
     let xNext = xRewind + anchoBoton + gap;
+    
     if (mouseX >= xBack && mouseX <= xBack + anchoBoton && mouseY >= btnY && mouseY <= btnY + altoBoton) {
       estado = "NIVELES";
     } else if (mouseX >= xRewind && mouseX <= xRewind + anchoBoton && mouseY >= btnY && mouseY <= btnY + altoBoton) {
@@ -246,11 +313,24 @@ function mouseClicked() {
     let anchoTotal = (anchoBoton * 2) + gap;
     let xBack = (width - anchoTotal) / 2;
     let xRewind = xBack + anchoBoton + gap;
+    
     if (mouseX >= xBack && mouseX <= xBack + anchoBoton && mouseY >= btnY && mouseY <= btnY + altoBoton) {
       estado = "NIVELES";
     } else if (mouseX >= xRewind && mouseX <= xRewind + anchoBoton && mouseY >= btnY && mouseY <= btnY + altoBoton) {
       reiniciarJuego();
       estado = "GAMEPLAY";
+    }
+    
+    if (mouseX >= width/2 - 120 && mouseX <= width/2 + 120 && mouseY >= btnY + 145 && mouseY <= btnY + 195) {
+      if(!enviandoDatos) finalizarJuegoYEnviarDatos();
+    }
+  } else if (estado === "RANKING") {
+    let btnX = width/2 - 120;
+    let btnY = height - 120;
+    if (mouseX >= btnX && mouseX <= btnX + 240 && mouseY >= btnY && mouseY <= btnY + 50) {
+      estado = "INICIO";
+      apodoGlobal = ""; 
+      resultadosNiveles = { 1: { tiempo: 0, estrellas: 0 }, 2: { tiempo: 0, estrellas: 0 }, 3: { tiempo: 0, estrellas: 0 } };
     }
   }
 }
@@ -258,6 +338,20 @@ function mouseClicked() {
 function reiniciarJuego() {
   jugador = new Jugador();
   vehiculos = [];
+  
+  monedas = [];
+  monedasRecolectadas = 0;
+  let intentos = 0;
+  while (monedas.length < 3 && intentos < 100) {
+    let mx = floor(random(0, COLS));
+    let my = floor(random(1, ROWS - 1)); 
+    let ocupado = monedas.some(m => m.x === mx && m.y === my);
+    if (!ocupado) {
+      monedas.push({x: mx, y: my, activa: true});
+    }
+    intentos++;
+  }
+
   const VEL_COLECTIVO = 3;
   const VEL_AUTO = 5;
   const VEL_MOTO = 8;
@@ -334,11 +428,9 @@ function reiniciarJuego() {
       vehiculos.push(v);
     }
   }
-
   tiempoInicio = millis();
 }
 
-// DIBUJO DE INTERFAZ Y PANTALLAS
 function dibujarHUD() {
   fill(0);
   noStroke();
@@ -352,7 +444,9 @@ function dibujarHUD() {
   let corazonY = 18;
   image(imgCorazon, corazonX, corazonY, tamCorazon, tamCorazon);
 
-  // Cronómetro en vivo
+  let textoMonedas = "Estrellas: " + monedasRecolectadas + "/3";
+  text(textoMonedas, corazonX + tamCorazon + 20, 20);
+
   let tiempoActual = ((millis() - tiempoInicio) / 1000).toFixed(1);
   textAlign(RIGHT, TOP);
   fill(0);
@@ -363,6 +457,14 @@ function dibujarPantallaInicio() {
   image(imgFondoInicio, 0, 0, width, height);
   image(imgTitulo, 350, 357);
   image(imgBotonPlay, 483, 539);
+  
+  let btnY = 740;
+  fill(255, 215, 0);
+  rect(width / 2 - 120, btnY, 240, 50, 10);
+  fill(0);
+  textSize(24);
+  textAlign(CENTER, CENTER);
+  text("VER RANKING", width / 2, btnY + 25);
 }
 
 function dibujarPantallaNiveles() {
@@ -393,12 +495,11 @@ function dibujarPantallaInstrucciones() {
 
 function dibujarPantallaVictoria() {
   background(15);
-  let pantallaWinActual = imgWinScreens[estrellasGanadas];
+  let pantallaWinActual = imgWinScreens[estrellasGanadas]; 
   let x = (width - pantallaWinActual.width) / 2;
   let y = (height - pantallaWinActual.height) / 2;
   image(pantallaWinActual, x, y);
 
-  // Tiempo final
   textFont(fuentePixelify);
   textSize(32);
   fill(255);
@@ -429,9 +530,16 @@ function dibujarPantallaGameOver() {
   let xRewind = xBack + anchoBoton + gap;
   image(imgBackButton, xBack, btnY);
   image(imgRewindButton, xRewind, btnY);
+  
+  fill(255, 215, 0);
+  rect(width / 2 - 120, btnY + 145, 240, 50, 10);
+  fill(0);
+  textSize(24);
+  textAlign(CENTER, CENTER);
+  // Le sumé 25 al Y para que el texto quede centrado justo adentro de la caja
+  text("VER RANKING", width / 2, btnY + 170); 
 }
 
-// JUGADOR
 class Jugador {
   constructor() {
     this.gridX = 10;
@@ -456,7 +564,6 @@ class Jugador {
   get y() { return this.gridY * GRID_SIZE; }
 }
 
-// CLASE VEHICULO 
 class Vehiculo {
   constructor(filaGrid, velocidad, largoCeldas, tipo = "auto", colorVehiculo = color(200)) {
     this.gridY = filaGrid;
@@ -522,4 +629,109 @@ class Vehiculo {
       jY + jAlto > vY
     );
   }
+}
+
+function dibujarPantallaApodo() {
+  background(20);
+  textFont(fuentePixelify);
+  textAlign(CENTER, CENTER);
+  
+  fill(255);
+  textSize(60);
+  text("COLOCAR APODO", width / 2, height / 2 - 100);
+  
+  textSize(30);
+  fill(150);
+  text("3 Letras - Estilo Arcade", width / 2, height / 2 - 30);
+  
+  fill(0);
+  stroke(255, 215, 0);
+  strokeWeight(4);
+  rect(width / 2 - 100, height / 2 + 20, 200, 80, 10);
+  
+  noStroke();
+  fill(255, 215, 0);
+  textSize(60);
+  text(apodoGlobal, width / 2, height / 2 + 60);
+  
+  if (apodoGlobal.length === 3) {
+    fill(0, 255, 0);
+    textSize(25);
+    text("PRESIONA ENTER PARA CONTINUAR", width / 2, height / 2 + 150);
+  }
+}
+
+function finalizarJuegoYEnviarDatos() {
+  enviandoDatos = true;
+  let nivelesCompletados = 0;
+  let estrellasTotales = 0;
+  let tiempoTotal = 0;
+  
+  for (let i = 1; i <= 3; i++) {
+    if (resultadosNiveles[i].tiempo > 0) {
+      nivelesCompletados++;
+      estrellasTotales += resultadosNiveles[i].estrellas;
+      tiempoTotal += resultadosNiveles[i].tiempo;
+    }
+  }
+
+  let data = {
+    apodo: apodoGlobal, 
+    niveles: nivelesCompletados,
+    estrellas: estrellasTotales,
+    tiempo: parseFloat(tiempoTotal.toFixed(1))
+  };
+
+  fetch('guardar.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(() => obtenerRanking())
+  .catch(err => console.error("Error guardando datos", err));
+}
+
+function obtenerRanking() {
+  fetch('ranking.php')
+    .then(res => res.json())
+    .then(data => {
+      top5Ranking = data;
+      estado = "RANKING";
+      enviandoDatos = false;
+    });
+}
+
+function dibujarPantallaRanking() {
+  background(20);
+  textFont(fuentePixelify);
+  textAlign(CENTER, CENTER);
+  
+  textSize(70);
+  fill(255, 215, 0); 
+  text("TOP 5 RANKING", width / 2, 120);
+
+  textSize(40);
+  fill(180);
+  text("APODO", width / 4, 250);
+  text("TIEMPO", width / 2, 250);
+  text("ESTRELLAS", 3 * width / 4, 250);
+
+  fill(255);
+  textSize(35);
+  for (let i = 0; i < top5Ranking.length; i++) {
+    let r = top5Ranking[i];
+    let y = 350 + (i * 80);
+    
+    text(r.apodo, width / 4, y);
+    text(r.tiempo_total + "s", width / 2, y);
+    text("x" + r.estrellas_totales, 3 * width / 4, y);
+  }
+
+  let btnX = width / 2 - 120;
+  let btnY = height - 120;
+  fill(200, 50, 50);
+  rect(btnX, btnY, 240, 50, 10);
+  fill(255);
+  textSize(24);
+  text("VOLVER", width / 2, btnY + 25);
 }
