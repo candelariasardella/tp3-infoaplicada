@@ -12,6 +12,7 @@ let imgAuto1Derecha, imgAuto2Derecha, imgAuto1, imgAuto2;
 let imgTaxi1Derecha, imgTaxi2Derecha, imgTaxi1, imgTaxi2;
 let imgMoto, imgMotoIzquierda;
 let fuentePixelify;
+let imgEscenario;
 
 // UI: Declaración de variables para la interfaz
 let imgFondoInicio, imgTitulo, imgBotonPlay, imgInstrucciones;
@@ -82,6 +83,8 @@ function preload() {
   imgNextButton   = loadImage('img/ui/next-button.png');
   imgBackButton   = loadImage('img/ui/back-button.png');
   imgCorazon      = loadImage('img/ui/heart.png');
+
+  imgEscenario = loadImage('img/escenario-9-de-julio.png');
 }
 
 function setup() {
@@ -187,27 +190,7 @@ function ejecutarGameplay() {
 
 // ESCENARIO 
 function dibujarEscenario() {
-  noStroke();
-  fill(180);
-  rect(0, 0, width, GRID_SIZE);
-  fill(50);
-  rect(0, GRID_SIZE * 1, width, GRID_SIZE * 6);
-  fill(40, 140, 60);
-  rect(0, GRID_SIZE * 7, width, GRID_SIZE * 2);
-  fill(50);
-  rect(0, GRID_SIZE * 9, width, GRID_SIZE * 6);
-  fill(180);
-  rect(0, GRID_SIZE * 15, width, GRID_SIZE);
-  
-  stroke(255, 200, 0);
-  strokeWeight(2);
-  for (let r = 1; r < ROWS - 1; r++) {
-    if (r !== 7 && r !== 8 && r !== 15) {
-      for (let c = 0; c < COLS; c += 2) {
-        line(c * GRID_SIZE, r * GRID_SIZE, (c + 1) * GRID_SIZE, r * GRID_SIZE);
-      }
-    }
-  }
+  image(imgEscenario, 0, 0, width, height);
 }
 
 // CONTROLES Y MANEJO DE TECLADO Y MOUSE
