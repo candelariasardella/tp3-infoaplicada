@@ -11,6 +11,8 @@ let imgObelisco, imgVereda, imgAsfalto, imgMetrobus, imgJugador, imgAuto, imgCol
 let imgAuto1Derecha, imgAuto2Derecha, imgAuto1, imgAuto2;
 let imgTaxi1Derecha, imgTaxi2Derecha, imgTaxi1, imgTaxi2;
 let imgMoto, imgMotoIzquierda;
+let imgColectivo1, imgColectivo2, imgColectivo3;
+let imgColectivo1Derecha, imgColectivo2Derecha, imgColectivo3Derecha;
 let fuentePixelify;
 let imgEscenario;
 
@@ -54,16 +56,31 @@ function preload() {
   // Taxis - Derecha
   imgTaxi1Derecha = loadImage('img/taxi1_derecha.png');
   imgTaxi2Derecha = loadImage('img/taxi2_derecha.png');
+
   // Taxis - Izquierda
   imgTaxi1 = loadImage('img/taxi1.png');
   imgTaxi2 = loadImage('img/taxi2.png');
+
   //Moto
   imgMoto = loadImage('img/moto.png');                
   imgMotoIzquierda = loadImage('img/moto-izquierda.png'); 
+
+  // Colectivos - Izquierda
+  imgColectivo1 = loadImage('img/colectivo1.png');
+  imgColectivo2 = loadImage('img/colectivo2.png');
+  imgColectivo3 = loadImage('img/colectivo3.png');
+
+  // Colectivos - Derecha
+  imgColectivo1Derecha = loadImage('img/colectivo1-derecha.png');
+  imgColectivo2Derecha = loadImage('img/colectivo2-derecha.png');
+  imgColectivo3Derecha = loadImage('img/colectivo3-derecha.png');
+
   // Moneda Spritesheet
   imgMonedaSprite = loadImage('img/unpeso-spritesheet.png');
+
   // Carga de tipografía
   fuentePixelify = loadFont('tipografia/PixelifySans-Regular.ttf');
+
   // Carga de UI Inicio y Niveles
   imgFondoInicio   = loadImage('img/ui/fondo-inicio.png');
   imgTitulo        = loadImage('img/ui/titulo.png');
@@ -415,25 +432,35 @@ function reiniciarJuego() {
 }
 
 function dibujarHUD() {
-  fill(0);
-  noStroke();
-  textSize(20);
-  textAlign(LEFT, TOP);
+  textFont(fuentePixelify);
   
+  // Fondo gris semitransparente para dar contraste
+  fill(40, 40, 40, 200); 
+  noStroke();
+  rect(10, 10, width - 20, 45, 8);
+
+  // Configuración de texto
+  fill(255); // Tipografía en blanco
+  textSize(22);
+  textAlign(LEFT, CENTER);
+  
+  // Dibujar Vidas
   let textoVidas = "Vidas: " + jugador.vidas;
-  text(textoVidas, 20, 20);
+  text(textoVidas, 25, 32);
+  
   let tamCorazon = 24;
-  let corazonX = 20 + textWidth(textoVidas) + 8;
-  let corazonY = 18;
+  let corazonX = 25 + textWidth(textoVidas) + 8;
+  let corazonY = 20;
   image(imgCorazon, corazonX, corazonY, tamCorazon, tamCorazon);
 
+  // Dibujar Estrellas/Monedas
   let textoMonedas = "Estrellas: " + monedasRecolectadas + "/3";
-  text(textoMonedas, corazonX + tamCorazon + 20, 20);
+  text(textoMonedas, corazonX + tamCorazon + 30, 32);
 
+  // Dibujar Tiempo
   let tiempoActual = ((millis() - tiempoInicio) / 1000).toFixed(1);
-  textAlign(RIGHT, TOP);
-  fill(0);
-  text("Tiempo: " + tiempoActual + "s", width - 20, 20);
+  textAlign(RIGHT, CENTER);
+  text("Tiempo: " + tiempoActual + "s", width - 25, 32);
 }
 
 function dibujarPantallaInicio() {
@@ -590,6 +617,16 @@ class Vehiculo {
         image(imgMoto, this.x, y, this.ancho, alto);
       } else {
         image(imgMotoIzquierda, this.x, y, this.ancho, alto);
+      }
+    } else if (this.tipo === "colectivo") {
+      if (this.velocidad > 0) {
+        image(imgColectivo1Derecha, this.x, y, GRID_SIZE, alto);
+        image(imgColectivo2Derecha, this.x + GRID_SIZE, y, GRID_SIZE, alto);
+        image(imgColectivo3Derecha, this.x + GRID_SIZE * 2, y, GRID_SIZE, alto);
+      } else {
+        image(imgColectivo3, this.x, y, GRID_SIZE, alto);
+        image(imgColectivo2, this.x + GRID_SIZE, y, GRID_SIZE, alto);
+        image(imgColectivo1, this.x + GRID_SIZE * 2, y, GRID_SIZE, alto);
       }
     } else {
       stroke(0);
